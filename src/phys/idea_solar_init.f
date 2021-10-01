@@ -10,12 +10,13 @@
 
       use physcons, only         : rgas => con_rgas
       use physcons, only         : avgd => con_avgd
-
+!      use wam_f107_kp_mod, only: f107, kp, kdt_3h
       implicit none
 !
       real, parameter   ::  PCC=1.985E-25    !  wavelength/energy conversion SI E=hc/lamda
       real, parameter   ::  eccentric=1.    !  eccentricity of Earth's orbit
 ! 
+!     real   :: f107 = 100., f107a = f107
 !
       integer,  parameter :: NWAVES = 37
       integer,  parameter :: NWAVES_EUV = 22
@@ -38,7 +39,7 @@
      &       SRBEFF(:), o2_scale_factor(:) ! Jo2-TIEGCM
 !
 !
-! middle & upper atmosphere heating efficiencies, effuv, effeuv(SRC)
+! middle & upper atm-re heating efficiencies, effuv, effeuv(SRC)
 !
       real (kind=kind_phys), allocatable :: effuv(:), effeuv(:)
       real (kind=kind_phys), allocatable :: eff_hart(:), eff_hugg(:)
@@ -55,12 +56,14 @@
       real, parameter     :: prdot02 = 1.e3*exp(-xbl)  ! mbars because pr = pr_idea in (mb)
       integer             :: nps                       ! layer where Pressure < 0.02   (2Pa)
                                                        ! nps-pressure index to start WAM-solar/photo <= 52.5 km 
+                                                  
+
       end module idea_solar
-
 !cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-
       subroutine idea_solar_init(levs)
 !----------------------------------------------------------------------------
+!
+!
 ! define: effuv,effeuv, solar fluxes (37), wlengths, cross-sections,
 !     other eff_hart, eff_hugg, eff_chap, eff_herz, eff_srb, eff_src, eff_lya
 !     init solar_calendar and F107/Kp datasets
@@ -72,16 +75,20 @@
 !
       use idea_solarno_input, only : solar_readno_snoewx
 
-      use idea_solar_input,  only : idea_solar_fix
+      use idea_solar_input,  only : idea_solar_fix, itheia
       use idea_solar_input,  only : wf107_s,   wkp_s
       use idea_solar_input,  only : wf107a_s,  wap_s
       use idea_solar_input,  only : weuv_s,  nwafix
-
+      use idea_solar_input,  only : solar_read_omni_2004_2017
       use idea_solar_input,  only : solar_read_namelist
       use idea_solar_input,  only : solar_read_myy1947_2016, solar_read_wam_init
       use idea_solar_input,  only : solar_waccmx_advance
       use idea_solar_input,  only : solar_wamstep_advance
 
+!      use idea_solar_input,  only : f107 => wf107_s,   kp => wkp_s
+!      use idea_solar_input,  only : f107a => wf107a_s, Ap => wap_s
+!      use idea_solar_input,  only : EUV37 => weuv_s,  nsp_euv => nwafix
+!
       use idea_mpi_def,       only : mpi_id, mpi_err, MPI_COMM_ALL,info
       use idea_solar,         only : nps,  effuv, effeuv, pr, prdot02
       use idea_solar,         only : o2_scale_factor,  SRBEFF
@@ -89,6 +96,7 @@
       use idea_solar,         only : eff_hart, eff_hugg, eff_chap, eff_herz
       use idea_solar,         only : eff_srb, eff_src, eff_lya
 !
+     
        use idea_solar,       only  : rwpcc, pcc
        use idea_solar,       only  : csao, csao2, csao3, csan2
        use idea_solar,       only  : csio, csio2, csin2
@@ -101,6 +109,12 @@
       use wam_date_calendar, only : CURRENT_NCEP_JDAT, ndwam  
       use wam_date_calendar, only : curday_wam, curmonth_wam, curddd_wam 
       use wam_date_calendar, only : curyear_wam, curutsec_wam 
+!
+      use wam_f107_kp_mod,    ONLY: read_wam_f107_kp_txt, 
+     &                              f107_wy, kp_wy, f107_kp_size,
+     &                              fix_spweather_data, kpa_wy, nhp_wy, nhpi_wy, f107d_wy,
+     &                              shp_wy, shpi_wy,
+     &                              swbt_wy, swvel_wy, swang_wy, swbz_wy, swden_wy
 !
 
 !
@@ -196,15 +210,17 @@
      &           2.01e-02, 2.53e-03/
 !
 ! O3 absorption cross section
+!
       sigeuv_o3 = (/
-     &          0.00e+00, 0.00e+00, 0.00e+00, 0.00e+00, 0.00e+00,
-     &          0.00e+00, 0.00e+00, 0.00e+00, 0.00e+00, 0.00e+00,
-     &          0.00e+00, 0.00e+00, 0.00e+00, 1.25e+01, 9.20e+00,
-     &          9.20e+00, 9.20e+00, 9.16e+00, 9.50e+00, 9.50e+00,
-     &          9.50e+00, 1.47e+01, 1.47e+01, 1.47e+01, 2.74e+01,
-     &          2.02e+01, 3.33e+01, 7.74e+00, 0.00e+00, 0.00e+00,
-     &          0.00e+00, 0.00e+00, 0.00e+00, 0.00e+00, 0.00e+00,
-     &          0.00e+00, 0.00e+00/)
+     |          0.00e+00, 0.00e+00, 0.00e+00, 0.00e+00, 0.00e+00,
+     |          0.00e+00, 0.00e+00, 0.00e+00, 0.00e+00, 0.00e+00,
+     |          0.00e+00, 0.00e+00, 0.00e+00, 1.25e+01, 9.20e+00,
+     |          9.20e+00, 9.20e+00, 9.16e+00, 9.50e+00, 9.50e+00,
+     |          9.50e+00, 1.47e+01, 1.47e+01, 1.47e+01, 2.74e+01,
+     |          2.02e+01, 3.33e+01, 7.74e+00, 0.00e+00, 0.00e+00,
+     |          0.00e+00, 0.00e+00, 0.00e+00, 0.00e+00, 0.00e+00,
+     |          0.00e+00, 0.00e+00/)
+
  
 ! The three major species' ionization branching ratio (off absorption):
 ! O2
@@ -217,6 +233,7 @@
      &           6.73e-01, 9.83e-01, 1.00e+00, 1.00e+00, 1.00e+00,
      &           1.00e+00, 1.00e+00, 1.00e+00, 1.00e+00, 1.00e+00,
      &           1.00e+00, 1.00e+00/
+! O       use idea_solar_input,  only : itheia
 
       DATA  BPhotonI_O /                                                
      &           0.00e+00, 0.00e+00, 0.00e+00, 0.00e+00, 0.00e+00,
@@ -391,28 +408,34 @@
 !                      many thanks to Dan Marsh, ACOM/NCAR
 !  '
 !
-       CALL  COPY_IDAT_NEMS_2_WAM      
-!------------------------------------------------------------------        
-! copy NEMS-cal[Y4-D3-M2-H1] to idat_wam (Y1-M2-D3-H4), irhour_wam
-! idate ...... in sighdr & sfchdr
-!------------------------------------------------------------------
+       CALL  COPY_IDAT_NEMS_2_WAM      !------------------------------------------------------------------        
+                                       ! copy NEMS-cal[Y4-D3-M2-H1] to idat_wam (Y1-M2-D3-H4), irhour_wam
+                                       ! idate ...... in sighdr & sfchdr
+                                       ! -----------------------------------------------------------------
 !
        CALL  CURRENT_NCEP_JDAT(idat_wam, irhour_wam, Mjdat, Hcur)
+  
+       if (mpi_id ==0 ) print *, 'idea_solar_init, idat_wam ',  idat_wam
 !
 !     data_swpc make a final decision keep it in "gloopb.f" or in "solar_init.f"
 !
+
+
+
+ 
+
 !
 !  data only for 2012
 !
       if (trim(SPW_DRIVERS)=='sair_wam'.and.idea_solar_fix.le.1 ) then
            CALL solar_read_wam_init(ncfile_fpath, mpi_id) 
            CALL solar_wamstep_advance(mpi_id, Mjdat, Hcur)
-      endif
+       endif
 !
 ! data_wx
 !
        if (trim(SPW_DRIVERS)=='cires_wam'.and.idea_solar_fix.le.1) then
-           CALL solar_read_myy1947_2016(ncfile_fpath, mpi_id )
+           CALL solar_read_omni_2004_2017(ncfile_fpath, mpi_id )
            CALL solar_waccmx_advance(mpi_id, Mjdat, Hcur, 1)
        endif
 !
@@ -426,21 +449,26 @@
        endif
 
       if (mpi_id == 0) then
-       write(6,*) ' VAY-end of idea_solar_init in idea_solar_heating.f'
+         write(6,*) ' VAY-end of idea_solar_init in idea_solar_heating.f'
       endif
 
+
 !=====================================================================================
+!
+!
 ! Below initilization of IDEA_SOLAR_HEAT, cross sections/efficiencies/NO-snoe
+!
 !     also a good place to "init constants" for Ozone/O2  MA heating rates
+!
 !=====================================================================================
 !     find nps
-
       do k=1,levs
         if(pr(k).le.prdot02) then
           nps=k
           exit
         endif
       enddo
+       print *, 'idea_solar_init, VAY solar-init nps', nps
 !
 ! get effuv,effeuv from interplating effuv17, effeuv17 to 150 levs 
 ! get no from interplating no17 to 150 levs  
@@ -486,11 +514,18 @@
       CALL  interpol_wamz_down(nz_Jo2sf, z15,JJ_scale_factor , levs, Z,
      & o2_scale_factor , 1.0) 
 !============================================================================VAY-2016
+! 
+!
 !      before taking out J-eff & srb-eff put them as 1.0
+!
+!
 !       o2_scale_factor(1:levs) =1.0
 !       SRBEFF(1:levs) =1.0
 !
 !============================================================================VAY-2016
+
+!
+!
 !  faulty/dirty vert. interpolations are replaced by "interpol_wamz"-
 !      should be applied for all WAM-physics with external inputs
 !      call z15toz(levs,JJ_scale_factor, Z, o2_scale_factor,0.)
@@ -498,6 +533,9 @@
 !      do k=1, levs
 !       print *, 'VAY-EF',Z(k)*7.-35., SRBEFF(k), o2_scale_factor(k)
 !      enddo
+!
+!      print *, 'VAY-SRBEF', maxval(SRBEFF63), minval(SRBEFF63)
+!      print *, 'VAY-SRBEF', maxval(SRBEFF), minval(SRBEFF)
 ! compute:  RWPCC
 ! VAY
         do J = 1, NWAVES  
@@ -518,21 +556,20 @@
 !
       RETURN
 !
-!=================================================================================
 !
-      RETURN
+      
 !
 !     vay-theia if (idea_solar_fix.le.1) then
 !
-         if (idea_solar_fix.le.1) then 
-             call mpi_bcast(wap_s  , 1,  MPI_REAL8,0, MPI_COMM_ALL,info)
-             call mpi_bcast(wkp_s  , 1,  MPI_REAL8,0, MPI_COMM_ALL,info)
-             call mpi_bcast(wf107_s, 1,  MPI_REAL8,0, MPI_COMM_ALL,info)
-             call mpi_bcast(wf107a_s, 1, MPI_REAL8,0, MPI_COMM_ALL,info)
-         endif
+           if (idea_solar_fix.le.1) then 
+             call mpi_bcast(wap_s  , 1,    MPI_REAL8,0, MPI_COMM_ALL,info)
+             call mpi_bcast(wkp_s  , 1,    MPI_REAL8,0, MPI_COMM_ALL,info)
+             call mpi_bcast(wf107_s, 1,    MPI_REAL8,0, MPI_COMM_ALL,info)
+             call mpi_bcast(wf107a_s, 1,   MPI_REAL8,0, MPI_COMM_ALL,info)
+            endif
 !vay-theia if (idea_solar_fix.eq.0) then
-         if (idea_solar_fix.eq.0) then         
-           call mpi_bcast(wEUV_s, nwafix,MPI_REAL8,0, MPI_COMM_ALL,info) 
-         endif
+           if (idea_solar_fix.eq.0) then         
+               call mpi_bcast(wEUV_s, nwafix,MPI_REAL8,0, MPI_COMM_ALL,info) 
+           endif
 !
       end subroutine idea_solar_init

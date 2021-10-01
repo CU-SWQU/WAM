@@ -55,7 +55,9 @@
       character(ch100) :: nc_file, ncfile_fpath, nctiros_fpath
       character(ch100) :: ncimf_fpath 
       integer          :: n3d, n2d
-!
+!      real  :: emaps1(21,20,7),cmaps1(21,20,7),djspectra1(15,21)
+
+
        call MPI_COMM_RANK (MPI_COMM_WORLD, mpi_id, mpi_err)
 !
 ! read_in NML_ION ( ION, TIROS & IMF data)
@@ -78,34 +80,24 @@
 !
        CALL ion_read_wam_init(ncfile_fpath, mpi_id)       ! Tirosd/iondata_tjr.nc 
 !
+       
        if (tiros_activity_fixnam > 0) then
+!       print *,'tiros_activity_fixnam=',tiros_activity_fixnam
 !
 !read nc or ascii formatted files
 !
           CALL tiros_read_wam_init(nctiros_fpath, mpi_id) ! Tiros/tiros_tjr.nc
 !tiros-txt     call tiros_init(emaps,cmaps,djspectra)
           CALL tiros_init(emaps1,cmaps1,djspectra1)       ! Tiros ascci files
+         print *,'itirosemaps1',maxval(emaps1),maxval(cmaps1),maxval(djspectra1)
+         print *,'min_itirosemaps1',minval(emaps1),minval(cmaps1),minval(djspectra1)
+
        endif
 !
        RETURN
 !
 ! more fancy read on "selected" PE for input-files and do "mpi_bcast"
-!
-        n2d  = nxmag*nymag
 
-        n3d  = NT_21*NT_20*NT_7   
-       
-        call mpi_bcast(emaps  , n3d,    MPI_REAL8,0, MPI_COMM_ALL,info)
-        call mpi_bcast(cmaps  , n3d,    MPI_REAL8,0, MPI_COMM_ALL,info)
-        call mpi_bcast
-     &      (djspectra, N_FLX*N_BND, MPI_REAL8,0, MPI_COMM_ALL,info)
-
-        call mpi_bcast(cormag  , n2d,    MPI_REAL8,0, MPI_COMM_ALL,info)
-        call mpi_bcast(btot    , n2d,    MPI_REAL8,0, MPI_COMM_ALL,info)   
-        call mpi_bcast(dipang  , n2d,    MPI_REAL8,0, MPI_COMM_ALL,info)  
-        call mpi_bcast(glon, nxmag,    MPI_REAL8,0, MPI_COMM_ALL,info) 
-        call mpi_bcast(glat, nymag,    MPI_REAL8,0, MPI_COMM_ALL,info)    
-!
 !
      
       END SUBROUTINE IDEA_ION_INIT
@@ -130,21 +122,23 @@
 !      use idea_ion_input, only : cormag(20,91),btot(20,91),dipang(20,91),glat(91),glon(20)
 !
       CONTAINS
-!
+  
       subroutine idea_ion(pres,solhr,cospass,zg,grav,o_n,o2_n,n2_n,cp,       
      &  adu,adv,adt,dudt,dvdt,dtdt,rho,rlat,rlon,ix,im,levs,              
      &  dayno,utsec,sda,maglon,maglat,btot,dipang,essa,
-     &  f107, f107d, kp, nhp, nhpi, shp, shpi, SPW_DRIVERS,
-     &  swbt, swang, swvel, swbz, swden)
+     &  f107, f107d, kp, nhp, nhpi, shp, shpi,SPW_DRIVERS,
+     &  swbt, swang, swvel,swbz, swden)
 !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ! driver      dtdt(i,k)=jh(i,k)/cp(i,k), dudt dvdt
 !              ion darge and Joule heating
 !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
       use namelist_wamphysics_def, only : JH0, JH_semiann,
      &                                    JH_ann, JH_tanh,
      &                                    JH_st0, JH_st1
       
+
+
+!      use idea_wam_control, only : SPW_DRIVERS      
       implicit none
       REAL  , INTENT(IN)   :: f107, f107d, kp  ! solar-geo inputs from different WAM applications
                                                ! CLIMATE-SWPC-RDATA, controlled in idea_phys
@@ -159,7 +153,7 @@
       INTEGER, INTENT(IN)     :: im !number of logitude
       INTEGER, INTENT(IN)     :: levs ! number of pres grid
       INTEGER, INTENT(IN)     :: dayno !calender day
- 
+!      integer, intent(in)     :: me              ! my pe
       REAL, INTENT(IN)     :: pres(ix,levs) ! pressure, Pa
 
       REAL, INTENT(IN)     :: o_n(ix,levs)  ! number density O (/m3)
@@ -219,7 +213,16 @@
 !      print *, 'vay-pres-ion', maxval(pres)
 !      print *, 'vay-rho-ion',  maxval(rho)
 !      endif
-      call GetIonParams(pres,
+!       if (me == 0) then 
+!	print *, 'ionadt=',maxval(adt)
+!!	print *, 'ionadt=ix,im,levs', ix,im,levs, k91
+!	endif
+!      call GetIonParams(pres,     
+!     &   dayno,utsec,F107,f107d,KP,NHP,NHPI,sda,sza,rlat,zg,grav,        
+!     &   o_n, o2_n, n2_n,adu,adv,adt,rho,rlt,rlon,ix,im,levs,k91,       
+!     &   btot,dipang,maglon,maglat,essa,                                
+!     &   dudt,dvdt,jh,me) 
+       call GetIonParams(pres,
 !     &   dayno,utsec,F107,KP,sda,sza,rlat,zg,grav,      
      &   dayno,utsec,F107,f107d,KP,NHP,NHPI,spw_drivers,sda,sza,rlat,zg,
      &   grav,o_n, o2_n, n2_n,adu,adv,adt,rho,rlt,rlon,ix,im,levs,k91,       
@@ -228,7 +231,17 @@
 
 !       print *, 'F107=  ', F107, 'F107d=  ', f107d
 !       print *, 'NHP=  ', NHP, 'NHPI=  ', NHPI
-
+    
+     
+!        if (me == 0) then 
+!	print *, 'afterionadt=',maxval(adt)
+!	print *, 'afterion=ix,im,levs', ix,im,levs, k91
+!        print *, 'ionF107=  ', F107, 'F107d=  ', f107d
+!        print *, 'ionNHP=  ', NHP, 'NHPI=  ', NHPI	
+!	endif
+!       print *, 'ionF107=  ', F107, 'F107d=  ', f107d
+!       print *, 'ionNHP=  ', NHP, 'NHPI=  ', NHPI
+!       print *, 'ionadt=  ', maxval(adt)
 
 ! update to ........ K/sec
       do i=1,im
@@ -236,16 +249,22 @@
 !   Joule heating factor to consider the seasonal variation and
 !   semiannual variation, Zhuxiao.Li
 
-!  JH0_5
+!  JH0_6
 !           jh_fac = 1.75+0.5*tanh(2.*rlat(i))*cos((dayno+9.)*2.*pi/365.)
 !     &                  +0.5*(cos(4.*pi*(dayno-80.)/365.))
 
         jh_fac = JH0+JH_tanh*tanh(2.*rlat(i))*cos((dayno+9.)*2.*pi/365.)
      &              +JH_semiann*(cos(4.*pi*(dayno-80.)/365.))
 
+
 ! VBz adjustment
 
-          if (abs(VBz).le.JH_st1) then
+!          if (abs(VBz).le.5000.) then
+!             st_fac = 1.
+!          else
+!             st_fac = (25000.+5000.)/(25000.+ abs(VBz))
+!          endif
+         if (abs(VBz).le.JH_st1) then
              st_fac = 1.
           else
              st_fac = (JH_st0+JH_st1)/(JH_st0+ abs(VBz))
@@ -266,12 +285,27 @@
      &   o_n, o2_n, n2_n,adu,adv,adt,rho,rlt,rlon,ix,im,levs,lev1,
      &   btot,dipang,maglon,maglat,essa,swbt,swang,swvel,swbz,swden,
      &   dudt,dvdt,jh)
+
+
+
+
+!     &   dayno,utsec,f107,f107d,kp,hp,hpi,sda,sza,rlat,ht,grav, 
+!     &   o_n, o2_n, n2_n,adu,adv,adt,rho,rlt,rlon,ix,im,levs,lev1,      
+!     &   btot,dipang,maglon,maglat,essa,                                
+!     &   dudt,dvdt,jh,me) 
 !      use physcons,  pi => con_pi
-!    
+!      call GetIonParams(pres,
+!     &   dayno,utsec,F107,KP,sda,sza,rlat,zg,grav,      
+!     &   dayno,utsec,F107,f107d,KP,NHP,NHPI,sda,sza,rlat,zg,grav,        
+!     &   o_n, o2_n, n2_n,adu,adv,adt,rho,rlt,rlon,ix,im,levs,k91,       
+!     &   btot,dipang,maglon,maglat,essa,                                
+!     &   dudt,dvdt,jh)     
+!       use IDEA_ION_INPUT, only : EMAPS, CMAPS, DJSPECTRA
        use IDEA_ION_INPUT, only : EMAPS1, CMAPS1, DJSPECTRA1
        use IDEA_ION_INPUT, only : tiros_switch
        use IDEA_ION_INPUT, only : GW_fixnam, tiros_activity_fixnam 
-       use idea_composition, only : pid12  
+       use idea_composition, only : pid12
+!       use idea_wam_control, only : SPW_DRIVERS  
 ! 
       implicit none
       INTEGER,    INTENT(IN)     :: dayno  !day 
@@ -279,7 +313,7 @@
       INTEGER,    INTENT(IN)     :: im !number of logitude
       INTEGER,    INTENT(IN)     :: levs ! number of pres grid
       INTEGER,    INTENT(IN)     :: lev1 ! lowest pres level to start k91 from idea_comp...
-!
+!      integer, intent(in)     :: me              ! my pe
 !      REAL, PARAMETER :: DTR=3.141592653/180.0
 !      REAL, PARAMETER :: ELCH=1.602e-19
       REAL, INTENT(IN)     :: pres(ix,levs) ! pressure, Pa
@@ -310,14 +344,19 @@
       REAL, INTENT(in) :: essa(im)    !magnetic local time
       real, intent(in) :: swbt, swang, swvel, swbz, swden
 
-
       REAL, INTENT(OUT) :: dvdt(ix,levs) !(m/s2)
       REAL, INTENT(OUT) :: dudt(ix,levs) !(m/s2)
       REAL, INTENT(OUT) :: jh(ix,levs)   ! (J/kg/s)
 ! local
       real ht1(levs),v1(levs),nden(levs),o2n(levs),on(levs),            
      &    n2n(levs),elx(im),ely(im),ssa,elz(im),ee1(im),                
-     &    ee2(im),cosdif,sindif,sdip,cdip,btheta,bphi,elecx,            
+     &    ee2(im),cosdif,sindif,sdip,cdip,btheta,bphi,elecx,
+!      REAL     :: eden(im,levs)  !electron density
+!
+!      REAL     :: eden_ch(levs) 
+!      real     ::  aur1(levs)
+ 
+!      real cosdif,sindif,sdip,cdip,btheta,bphi,elecx,            
      &    elecy,dif,dlat,dlon
       INTEGER   k,i,n,tiros_activity_level  
 !     Ion drag variables :
@@ -344,13 +383,16 @@
       REAL      :: a5, b5, c7
       REAL      :: jth,jrad  
       REAL      :: jphi,   GW 
+
       REAL      :: eden(ix,levs)  !electron density
       REAL      :: eden_chiu(ix,levs)  !electron density from CHIU
       REAL      :: eden_aurora(ix,levs)  !electron density from TIROS
-!
+
       real,dimension(levs) :: pr1,rho1,grav1, adt1
       real,dimension(levs) :: o3p_1,o2_1,n2_1,aur_1
-!      REAL                 :: eflux, ch
+  
+
+
 !      real      :: emaps1(21,20,7),cmaps1(21,20,7),djspectra1(15,21)
 !  
 !===================================================================
@@ -358,6 +400,7 @@
 !===================================================================
 ! VAY-2016: (im, ix) => (im)
 !
+!      print *,' TIROS ',maxval(emaps1),maxval(cmaps1),maxval(djspectra1)
       call idea_geteb(im, dayno,utsec,f107,f107d,kp,maglat,maglon,          
      &     essa,swbt,swang,swvel,swbz,swden,ee1,ee2)
 !     ee1=0.
@@ -376,23 +419,47 @@
 !
       IF (trim(SPW_DRIVERS)=='swpc_fst') then
          tiros_activity_level = hpi
+!	 if (me .eq.0) then
+!       print *,'tiros_hpi=',tiros_activity_level,hpi
+!       endif  
          GW = hp
       ELSE          
          tiros_activity_level = tiros_activity_fixnam
          GW = GW_fixnam
       ENDIF
 !
+!        dvdt(:,:) = 0.
+!        dudt(:,:) = 0.       
+!         jh(:,:) = 0.
+!        eden(:,:) = 0.
+	
       DO i = 1,im 
-!
+!     
          do k=1,levs
            ht1(k)=ht(i,k)
+!	   aur1(k)=0.
          enddo
-!
-         CALL EARTH_CHIU_MODEL(sda,sza(i),maglat(i),                    
-     &         maglon(i),rlt(i), rlat(i), f107,                         
+	 
+!       call tiros_ionize_sv
+!     & (me,lev1,levs,tiros_activity_level,GW, pres(i,1:levs),ht1,
+!     & grav(i,1:levs),o_n(i,1:levs),o2_n(i,1:levs), n2_n(i,1:levs),
+!     & adt(i,1:levs),maglat(i),essa(i),aur_1)	 
+!        call tiros_ionize_data
+!     & (me,lev1,levs,tiros_activity_level,GW, pres(i,1:levs),ht1,
+!     & grav(i,1:levs),o_n(i,1:levs),o2_n(i,1:levs), n2_n(i,1:levs),
+!     & adt(i,1:levs),maglat(i),essa(i),aur1,
+!     & emaps1,cmaps1,djspectra1) 
+!              dip     = dipang(i)*DTR
+          CALL EARTH_CHIU_MODEL(sda,sza(i),maglat(i),                    
+     &         maglon(i),rlt(i), rlat(i), f107, 
      &         dipang(i)*DTR, dayno, ht1, eden_chiu,i,lev1,             
      &         levs,ix)
-!
+                        
+!     &         dip, dayno, ht1, eden_ch,lev1,             
+!     &         levs)
+!          do k=1,levs
+!           eden(i,k)=eden_ch(k)+aur1(k)
+!          enddo           
 ! tiros_ionize returns ionization rates for O, O2, and N2 for a given
 ! geomagnetic latitude GL and magnetic local time MLT based on
 ! TIROS/NOAA statistical maps of energy influx and characteristic energy
@@ -438,6 +505,12 @@
 !
       eden(i,:)=sqrt(eden_chiu(i,:)**2   + eden_aurora(i,:)**2)
       ENDDO
+
+
+
+
+
+   
 !      if (mpi_id == 0) then
 !      print*,'chiuok'
 !      print*,'eden',eden(1,lev1:levs)
@@ -516,9 +589,9 @@
           c7 =(jth*(elx(i)+adu(i,k)*brad)+                              
      &         jphi*(ely(i)-v1(k)*brad)+jrad*elz(i))/rho(i,k) !new
 ! Calculation of ion drag terms END
-          dvdt(i,k)   = -1.* a5
+          dvdt(i,k)   = -a5
           dudt(i,k)   =  b5
-          jh(i,k)   = c7
+          jh(i,k)     =  c7
         enddo
         do k=1,lev1-1 
           dvdt(i,k) = 0.
@@ -532,13 +605,76 @@
 !        endif
 !
       RETURN
-      END SUBROUTINE GetIonParams
+      END SUBROUTINE GetIonParams  
+      
+       
+!      SUBROUTINE getmag(im,utsec,rlat,rlon,sda,                      
+!     &btot,dipang,maglon,maglat,essa)
 !
+! Oct 2016 take out IX from all 1D-subs
+!
+!      use physcons, pi => con_pi
+!      use idea_composition,  only : DTR, PID2 
+!      IMPLICIT NONE
+
+!     REAL(prcn) high_lat_limit  Limit in degrees above 
+!     which foster used. Below this limit, Richmond 
+!     field used
+!      real, PARAMETER ::high_lat_limit=60.
+!      real, PARAMETER:: DTR = pi/180.
+!      real, PARAMETER:: ELCH = 1.062e-19
+! Input parameters
+
+!      INTEGER,    INTENT(IN)     :: im  !number of longitude
+!      REAL,       INTENT(IN)     :: utsec !UT second
+!      REAL,       INTENT(IN)     :: rlat(im)  ! geo latitude (rad)
+!     REAL,       INTENT(IN)     :: rlon(im)  ! geo longitude (rad)
+!      REAL,       INTENT(IN)     :: sda  ! solar diclination angle (rad)
+! Output Magnetic and electric parameters 
+!     REAL, INTENT(OUT) :: elx(im)
+!     REAL, INTENT(OUT) :: ely(im)     !electric field
+!
+!      REAL, INTENT(OUT) :: maglon(im)  !magnetic longitude (rad)
+!      REAL, INTENT(OUT) :: maglat(im)  !magnetic latitude (rad)
+!      REAL, INTENT(OUT) :: btot(im)    !mapgnetic field strength
+!     REAL, INTENT(OUT) :: dipang(im)  !Dip angle (degree)
+!     REAL, INTENT(OUT) :: essa(im)    !magnetic local time
+! Local 
+!      real cormag(im),cmorg(im)
+!      integer i
+! set elx ely zero first
+!     elx=0.
+!     ely=0.
+! get cormag btot dipang in grid
+!      call interp_field(im,rlat,rlon,cormag,btot,dipang)
+! get maglon,maglat
+!      call SPOLE(im,RLAT,rlon,utsec,SDA,maglon,ESSA,CMORG)
+
+!      do i=1,im
+!         maglat(i)=pid2-cormag(i)*DTR
+!         print *, i, maglat(i)*R_2_D, 'VAY_MAG_deg ' 
+!      enddo
+!      return
+!     end SUBROUTINE getmag
+!      
+
+
+
+
+
+
+!      END MODULE WAM_ION
+      
+!
+!      SUBROUTINE IONNEUT(P1,P2,P3,API1,API2,API3, 
+!     &                   T,VIN, A_MIn,NMAx,n0)
       SUBROUTINE IONNEUT(P1,P2,P3,PI1,PI2,PI3, T,VIN,A_MIn,NMAx,n0)
       INTEGER :: NMAx, n0
       REAL    ::  P1(NMAx) , P2(NMAx) , P3(NMAx) 
       REAL    ::   T(NMAx) , VIN(NMAx) ,  A_MIn(NMAx)
+!      REAL    :: API1(NMAx) , API2(NMAx), API3(NMAx)
       REAL    :: PI1(NMAx) , PI2(NMAx), PI3(NMAx)
+     
 !
 !vay-2015 : sum => sum_vay
 !           Amin => A_min , ftiny ~ 1.e-90                                                          
@@ -590,7 +726,8 @@
 !
 ! vay-2016: another interpolation for the Electric fields
 !                           to model-based maglon-maglat  
-!     
+!
+!      use idea_composition,  only : PI,  PI2, DTR, R_2_D, fac_lst, PID2     
       use idea_imf_input, only : idea_imf_fix
       use idea_imf_input, only : bz_s, by_s, swvel_s
 !
@@ -607,6 +744,7 @@
       real, intent(in)    :: maglon(im)  ! magnetic longitude (rad)
       real, intent(in)    :: essa(im)    ! degree
       real, intent(in)    :: swbt, swang, swvel, swbz, swden
+      
       real, intent(out)   :: ee1(im)     ! electric field x direction mV/m
       real, intent(out)   :: ee2(im)     ! electric field y direction mV/m
 !
@@ -770,8 +908,10 @@
       enddo
       return
       end SUBROUTINE getmag
+
 !      
       SUBROUTINE SPOLE(im,RLAT,PHIR,utsec,SDA,PHIMR,ESSA,CMORG)
+!      use idea_composition,  only : DTR, PI, PId2       
       implicit none
       real, PARAMETER    ::PI=3.141592653,DTR=PI/180.
       integer,intent(in) :: im          ! number of longitude 
@@ -789,7 +929,9 @@
       integer i
 !
       do i=1,im
+!      th=pid2-rlat(i)
       th=pi/2.-rlat(i)
+
 !
 ! SET POLE COORD. FOR EACH HEMIS.
 !
@@ -821,6 +963,7 @@
 !     SSP=360.-utsec/240.
       SSP=180.-utsec/240.
       SSPR=SSP*DTR
+!      CSDA=PId2-SDA
       CSDA=PI/2.-SDA
       AS1=COS(SSPR)*SIN(CSDA)
       BS1=SIN(SSPR)*SIN(CSDA)

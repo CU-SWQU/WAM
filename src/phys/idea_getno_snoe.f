@@ -1,4 +1,4 @@
-      MODULE idea_solarno_input
+      MODULE IDEA_solarno_input
 
 
        use IDEA_IO_UNITS, only : iulog
@@ -41,6 +41,10 @@
 !----------------------------------------------------------------------
 !	... open the netcdf file
 !----------------------------------------------------------------------
+       if(mpi_id.eq.0) then
+           write(iulog,*)file        
+           write(iulog,*) 'idea_solar_input: opening file for readno', trim(file) 
+        endif
        ierNC=NF90_OPEN(trim(File), nf90_nowrite, ncid)   
        if (iernc /=0) write(iulog,*) ncid, 'ncid ', iernc, ' iernc '     
 !----------------------------------------------------------------------
@@ -52,10 +56,10 @@
          iernc = nf90_inquire_dimension(ncid, dimidT(2), len=nz)
          iernc = nf90_inquire_dimension(ncid, dimidT(1), len=ny)
          if(mpi_id.eq.0) then
-          if (nz .ne. no_nz16 .or. ny.ne.no_ny33 .or. neofs.ne.no_neofs)
-     &        then
-          write(iulog,*)
-     &        'snoe_rdeof: failed to read expected neofs=nz=ny'
+          write(iulog,*) neofs, nz, ny, ' ne-nz-ny of NO-EOFs VAY'
+          write(iulog,*) no_neofs, no_nz16, no_ny33,' ne-nz-ny of NO-EOFs VAY'
+          if (nz .ne. no_nz16 .or. ny.ne.no_ny33 .or. neofs.ne.no_neofs) then
+          write(iulog,*)'snoe_rdeof: failed to read expected neofs=nz=ny'
            call mpi_quit(23901)
           endif
          endif
@@ -69,8 +73,7 @@
        allocate( no_eof(ny, nz, neofs),stat=astat )
        if( astat /= 0 ) then
        write(iulog,*) ' alloc_err in read_no_snoe no_eof ' 
-       write(iulog,*) 'snoe_rdeof: failed to allocate eofs; error = ',
-     &                 astat
+       write(iulog,*) 'snoe_rdeof: failed to allocate eofs; error = ',astat
        end if 
 
 !----------------------------------------------------------------------
@@ -91,9 +94,14 @@
 !	... close the netcdf file
 !----------------------------------------------------------------------
         iernc=nf90_close(ncid)     
+        if(mpi_id.eq.0) then
+         write(iulog,*) ' VAYsnoe ZKM:', no_zkm(1), ': ', no_zkm(nz)
+         write(iulog,*) ' VAYsnoe MLT:', no_mlat(1), ': ', no_mlat(ny)
+         write(iulog,*) ' VAYsnoe NO:', maxval(no_m), minval(no_m)
+        endif
       end subroutine solar_readno_snoewx
 !
-      END MODULE idea_solarno_input
+      END MODULE IDEA_solarno_input
 !=====================================================
       SUBROUTINE WAM_COOLNO1(np,nps,T,O,NO,QNO)   
 !

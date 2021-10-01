@@ -557,9 +557,9 @@
       integer                           :: kmsk(lonr,lats_node_r)
 
 !    validation variables
-     type(ESMF_Grid)                   :: grid
-     type(ESMF_Field), save            :: validationField
-     integer, save                     :: slice=1
+      type(ESMF_Grid)                   :: grid
+      type(ESMF_Field), save            :: validationField
+      integer, save                     :: slice=1
 
 
 !
@@ -796,7 +796,7 @@
 ! to the esmf exprot state which is the public interface
 ! for other esmf grid components.
 !-------------------------------------------------------
-     call esmf_logwrite("internal state to esmf export state", &
+      call esmf_logwrite("internal state to esmf export state", &
                           ESMF_LOGMSG_INFO, rc = rc1)
 
 ! the pointer/copy option (Sarah Lu)
@@ -892,13 +892,13 @@
 
 ! retrieve the esmf internal state.
 !----------------------------------
-     call esmf_logwrite(                                                &
+      call esmf_logwrite(                                                &
                       "get the internal state in the finalize routine", &
                           ESMF_LOGMSG_INFO, rc = rc1)
 
-     call esmf_gridcompgetinternalstate(gc_gfs_phy, wrap, rc1)
+      call esmf_gridcompgetinternalstate(gc_gfs_phy, wrap, rc1)
 
-     call gfs_physics_err_msg(rc1,                                      &
+      call gfs_physics_err_msg(rc1,                                      &
               'get the internal state in the finalize routine',rc)
 
 ! point the local internal state pointer to the esmf internal state pointer.

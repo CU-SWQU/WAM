@@ -36,10 +36,12 @@
       logical wam_gwphys
       logical wam_solar_in
       logical wam_ion_in
-
       real JH0, JH_tanh, JH_semiann, JH_ann, JH_st0, JH_st1
       real skeddy0, skeddy_semiann, skeddy_ann
       real tkeddy0, tkeddy_semiann, tkeddy_ann
+!
+
+
 !
 ! DAS & Nudging on the fly
 !
@@ -93,6 +95,10 @@
       tkeddy_semiann = 0.
       tkeddy_ann     = 0.
 
+
+
+
+!
 ! WAM with "DAS & Nudging" on the fly the LA-drivers w/o GDAS/NOAA
 !
       wam_das_in=.false.         ! UFO for SABER & MLS with EKF corrections
@@ -137,15 +143,14 @@
       integer :: ierr
       namelist /nam_wam_control/ 
      & wam_climate, wam_swpc_3day, wam_cires_rdata,wam_sair2012,
-     & wam_swin, 
+     & wam_swin,
      & wam_smin, wam_smax,
      & wam_saver, wam_geostorm,
      & wam_gwphys, wam_solar_in, wam_ion_in, wam_das_in, wam_smet_in,
      & wam_netcdf_inout, wam_tides_diag, wam_pws_diag, wam_gws_diag,
      & JH0, JH_tanh, JH_semiann, JH_ann, JH_st0, JH_st1,
      & skeddy0, skeddy_semiann, skeddy_ann,
-     & tkeddy0, tkeddy_semiann, tkeddy_ann
-     
+     & tkeddy0, tkeddy_semiann, tkeddy_ann     
 
       open(nlun_con, file=trim(nml_control), status='old' )
       read(nlun_con, nam_wam_control, iostat=ierr)   
@@ -163,5 +168,13 @@
    
        if(wam_swin)   swin_drivers = 'swin_wam'
 
+       if (mpi_id == 0) then
+       print *, ' VAY idea_wamcontrol_init '
+       print *, ' VAY SPW_DRIVERS ', SPW_DRIVERS
+       print *, ' WAM_SWIN ', wam_swin
+       print *,' nluncon=',nlun_con,'nam_wam_control =',
+     &                 trim(nml_control)
+       write(6, nam_wam_control)    
+       endif
        end subroutine idea_wamcontrol_init
 

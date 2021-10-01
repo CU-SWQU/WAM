@@ -200,7 +200,6 @@ allocate(                                  &
     flx_fld%SNOWCA  = 0.
     flx_fld%SRUNOFF = 0.
     flx_fld%SNOHFA  = 0.
-    flx_fld%SOILM   = 0.
 !jw
     flx_fld%SUNTIM  = 0.
 !for gocart
