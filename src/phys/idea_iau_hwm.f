@@ -1,7 +1,7 @@
       module idea_iau_hwm
       USE machine,       ONLY: kind_io8     
       implicit NONE
-      integer, parameter  :: nxa_hwm = 768, nya_hwm =384, nza_hwm=40, nta_hwm=24  ! fixed dimension for T254-nudging HWM
+      integer, parameter  :: nxa_hwm = 192, nya_hwm =94, nza_hwm=40, nta_hwm=24  ! fixed dimension for T254-nudging HWM
 
       real                :: lat_hwm(nya_hwm)
       real                :: lon_hwm(nxa_hwm)
