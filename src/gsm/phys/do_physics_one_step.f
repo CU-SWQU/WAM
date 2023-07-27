@@ -82,6 +82,14 @@
      &,                                    importFieldsValid
       use nuopc_physics,            only: model_parameters
       use wam_ifp_class
+      
+      use idea_iau_hwm,           only: irec_anl, Last_IAU_DATE8
+      use idea_iau_hwm,           only: IAU_UPDATE_DATE8, UPDATE_DATE10 
+      use idea_iau_hwm,           only: Uhwm,Vhwm,gpy_U_hwm,gpy_V_hwm
+      use idea_iau_hwm,           only: nta_hwm, nza_hwm
+      use idea_iau_hwm,           only: wa_nudge_hwm, wm_nudge_hwm
+
+
       IMPLICIT NONE
 !!     
       TYPE(Sfc_Var_Data)        :: sfc_fld
@@ -97,7 +105,14 @@
 !*    REAL(KIND=KIND_GRID)      GRID_GR(lonr*lats_node_r_max,lotgr)
       CHARACTER(16)             :: CFHOUR1
       logical                   :: restart_step
-!!    
+!!   
+!Garima
+      logical, save             :: FIRST_NCR=.true.
+      INTEGER                   :: IAU_DATE_8, IAU_Irec
+      INTEGER, save             :: Curr_IAU_DATE8, CURR_NC_WAMDAY
+      INTEGER, save             :: Curr_NC_WAMDAYHR, Curr_IAU_DATE10
+      REAL                      :: RIH6,RIH24, RIH1 
+
 ! The following dummy array must be an explicit shape dummy array!!!!!
       REAL(KIND=KIND_EVOD),INTENT(IN):: 
      &  importData(lonr,lats_node_r,NImportFields)
@@ -151,6 +166,12 @@
 ! NUOPC physics driver types
        type(model_parameters), intent(in)     :: mdl_parm
 !
+      real, dimension(lonr,lats_node_r,nza_hwm):: U_mod_dev, V_mod_dev
+      real, dimension(lats_node_r,nza_hwm) :: U_mod_zon, U_hwm_zon,
+     & U_mod_zon_new, V_mod_zon, V_hwm_zon, V_mod_zon_new
+      integer         :: item_val,njeff_val, lon_val,lan_val,
+     & lat_val,lons_lat_val
+
       zsea1=0.001*real(nstf_name(4))
       zsea2=0.001*real(nstf_name(5))
 
@@ -160,6 +181,164 @@
       lsfwd   = kdt == 1
 !jws
       kdt_dif = kdt - kdt_start
+
+      rih6 = mod(fhour,6.0)
+      rih24=mod(fhour,24.0)
+      rih1=mod(fhour,1.0)
+! Garima-2022, VAY-2017        rih6=5.000000000000071E-002   fhour=24.0500000000000    kdt=481
+!
+!      print*, 'kdtrestart_step.FIRST_NCR',kdt,restart_step,FIRST_NCR
+!      print *, 'Gar debug - in do_physics'
+      if (kdt > 1 .and. restart_step.and.FIRST_NCR) then                        ! Special Restart Run Treatment
+          CALL IAU_UPDATE_DATE8(Idate, Fhour, Curr_IAU_DATE8)
+          CALL UPDATE_DATE10(Idate, Fhour, Curr_NC_WAMDAYHR) 
+          IAU_IREC=1 
+         if (me == 0) then
+            print *, ' Garima_IAU_RESTART ', rih1, fhour, kdt
+            print *, ' Garima_IAU_RESTART ',  Curr_NC_WAMDAYHR  
+         endif    
+      
+       if (.not. allocated(gpy_U_hwm)) then
+       allocate(gpy_U_hwm(lonr,lats_node_r,nza_hwm),stat=ierr)
+       allocate(gpy_V_hwm(lonr,lats_node_r,nza_hwm),stat=ierr)
+       endif
+
+
+          call READ_ANALYSIS(Curr_IAU_DATE8, IAU_Irec, me)
+          irec_anl = IAU_Irec
+          Last_IAU_DATE8 =Curr_IAU_DATE8
+
+    
+        call IDEA_IAU_SPLIT3D
+     & (Uhwm,nza_hwm, me, gpy_U_hwm,GLOBAL_LATS_R,LONSPERLAR)
+        call IDEA_IAU_SPLIT3D
+     & (Vhwm,nza_hwm, me, gpy_V_hwm,GLOBAL_LATS_R,LONSPERLAR)
+
+        FIRST_NCR=.false.
+      endif
+
+!
+! Regular Updates
+!
+      !print*,'do_phys_rih6=',rih6
+!      print*,'do_phys_rih1=',rih1
+      
+      !if (lsidea.and.rih6.eq.0.0) then
+      if (lsidea.and.rih1.eq.0.0) then
+           IAU_IREC = irec_anl+1         
+           if (IAU_IREC <= nta_hwm) then
+              Curr_IAU_DATE8 =  Last_IAU_DATE8
+           else
+               IAU_IREC=1     
+             CALL IAU_UPDATE_DATE8(Idate, Fhour, Curr_IAU_DATE8)
+           endif
+           if (me == 0) then
+            print *, ' Gar_IAU_UPDATE analysis ',rih1, fhour
+            print *, ' Gar_IAU_UPDATE= ', IAU_IREC, Curr_IAU_DATE8
+            print *, ' Gar_IAU_UPDATE= ', Idate
+           endif
+
+           if (.not. allocated(gpy_U_hwm)) then
+            allocate(gpy_U_hwm(lonr,lats_node_r,nza_hwm),stat=ierr)
+            allocate(gpy_V_hwm(lonr,lats_node_r,nza_hwm),stat=ierr)
+           endif
+
+           call READ_ANALYSIS(Curr_IAU_DATE8, IAU_Irec, me)
+           irec_anl = IAU_Irec
+           Last_IAU_DATE8 =Curr_IAU_DATE8
+
+    
+           call IDEA_IAU_SPLIT3D 
+     &     (Uhwm,nza_hwm, me, gpy_U_hwm,GLOBAL_LATS_R,LONSPERLAR)
+           call IDEA_IAU_SPLIT3D
+     &     (Vhwm,nza_hwm, me, gpy_V_hwm,GLOBAL_LATS_R,LONSPERLAR)
+
+!       Garima try nudging in blocks
+!        print *,'Testing Gar nudging00: ',shape(gpy_U_hwm),
+!     &  shape(grid_fld%u)
+!    &  shape(gpy_V_hwm)
+!       print *,'Testing Gar nudging0: ',shape(grid_fld%u),
+!       &  lonr
+
+!       print *, 'Testing Gar nudging1: ', lats_node_r,ngptc
+        do k=1,40
+         do lan_val=1, lats_node_r
+          lat_val=global_lats_r(ipt_lats_node_r-1+lan_val)
+          lons_lat_val=lonsperlar(lat_val)
+!         print *, 'Testing Gar nudging2: ', lat_val, lons_lat_val
+          U_mod_zon(lan_val,k)=(sum(grid_fld%u(:,lan_val,k+74)))
+     &           /lonr
+          U_hwm_zon(lan_val,k)=(sum(gpy_U_hwm(:,lan_val,k)))/lonr
+          U_mod_zon_new(lan_val,k)=(wm_nudge_hwm(k)*
+     &          U_mod_zon(lan_val,k))+(wa_nudge_hwm(k)*U_hwm_zon(
+     &          lan_val,k))
+
+          V_mod_zon(lan_val,k)=(sum(grid_fld%v(:,lan_val,k+74)))
+     &           /lonr
+          V_hwm_zon(lan_val,k)=(sum(gpy_V_hwm(:,lan_val,k)))/lonr 
+          V_mod_zon_new(lan_val,k)=(wm_nudge_hwm(k)*
+     &          V_mod_zon(lan_val,k))+(wa_nudge_hwm(k)*V_hwm_zon(
+     &          lan_val,k))
+
+           do lon_val=1, lons_lat_val,ngptc
+            njeff_val=min(ngptc,lons_lat_val-lon_val+1)
+            do i=1,njeff_val
+                item_val=lon_val+i-1
+!                print *, 'Testing Gar nudging3:',item_val,lan_val,k,
+!     &          njeff_val
+!                print *,'Testing Gar nudging4: ',item_val,lan_val,k,
+!     &               grid_fld%u(item_val,lan_val,k+74)
+                U_mod_dev(item_val,lan_val,k)=grid_fld%u(item_val,
+     &               lan_val,k+74)- U_mod_zon(lan_val,k)
+                grid_fld%u(item_val,lan_val,k+74)=U_mod_dev(item_val,
+     &           lan_val,k)+ U_mod_zon_new(lan_val,k) 
+ 
+                V_mod_dev(item_val,lan_val,k)=grid_fld%v(item_val,
+     &            lan_val,k+74)-V_mod_zon(lan_val,k)
+                grid_fld%v(item_val,lan_val,k+74)=V_mod_dev(
+     &           item_val,lan_val,k)+V_mod_zon_new(lan_val,k)
+
+!                print *, 'Testing Gar nudging2: ', lan_val,k,
+!     &               V_mod_zon(lan_val,k),V_hwm_zon(lan_val,k)
+
+!               print *, 'Testing Gar nudging5: ', lan_val,k,
+!     &               U_mod_zon(lan_val,k),U_hwm_zon(lan_val,k)
+!               print *, 'Testing Gar nudging6: ',lan_val,k,
+!     &          wm_nudge_hwm(k),wa_nudge_hwm(k),U_mod_zon_new(lan_val,k)
+!               print *, 'Testing Gar nudging7:',item_val,lan_val,k,k+74,
+!     &              U_mod_dev(item_val,lan_val,k),
+!     &              grid_fld%u(item_val,lan_val,k+74)
+ 
+!               print *, 'Testing Gar nudging8:',item_val,lan_val,k,
+!     &              grid_fld%u(item_val,lan_val,k+74)
+      
+!         3D nudging
+!               grid_fld%u(item_val,lan_val,k+74)=(wm_nudge_hwm(k)*
+!     &              grid_fld%u(item_val,lan_val,k+74))+(wa_nudge_hwm(k)*
+!     &              gpy_U_hwm(item_val,lan_val,k))
+
+!               grid_fld%v(item_val,lan_val,k+74)=(wm_nudge_hwm(k)*    
+!     &              grid_fld%v(item_val,lan_val,k+74))+(wa_nudge_hwm(k)*
+!     &              gpy_V_hwm(item_val,lan_val,k))
+              enddo
+            enddo
+          enddo
+        enddo
+
+!         print *,'Testing Gar nudging8 :',shape(grid_fld%u),
+!     &   shape(grid_fld%v)
+!         print *,'Testing Gar nudging9 :',shape(U_mod_zon),
+!     &   shape(U_hwm_zon), shape(U_mod_zon_new)
+!          print *, 'Testing Gar nudging10 :',shape(V_mod_zon),
+!     &   shape(V_hwm_zon), shape(V_mod_zon_new)
+!         print *, 'Testing Gar nudging11 :',shape(U_mod_dev),
+!     &   shape(V_mod_dev)
+!         print *, 'Testing Gar nudging12: ', grid_fld%u(1,1,1)
+
+          endif      !lsidea   & mod(fhour,6) =0
+
+
+
 !     if (me == 0) write(0,*)' in do_onestep ndfi=',ndfi,' kdt_dif=',kdt_dif
 !    &,' ldfi=',ldfi,' me=',me,' kdt=',kdt,' kdt_start=',kdt_start
 
