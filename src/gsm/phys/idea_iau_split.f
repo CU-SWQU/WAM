@@ -21,7 +21,7 @@
 !
       integer kmsk0(lonr,lats_node_r)
       integer         :: i,j,k, lat
-
+      
       allocate ( buff2(lonr,lats_node_r))
       allocate ( buffo(lonr,lats_node_r))
       DO k=1, nz
