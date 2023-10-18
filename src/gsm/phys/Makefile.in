@@ -1256,7 +1256,8 @@ libgfsphys_a-idea_ncout_diag.$(OBJEXT) : libgfsphys_a-resol_def.$(OBJEXT) libgfs
           libgfsphys_a-idea_wamdiag3d_mod.$(OBJEXT) libgfsphys_a-wam_pass_diag_types.$(OBJEXT) 
 libgfsphys_a-idea_ncout_gain3d.$(OBJEXT) : libgfsphys_a-resol_def.$(OBJEXT) libgfsphys_a-layout1.$(OBJEXT) \
           libgfsphys_a-mpi_def.$(OBJEXT) 
-libgfsphys_a-idea_ncout_phys.$(OBJEXT) : libgfsphys_a-resol_def.$(OBJEXT) libgfsphys_a-layout1.$(OBJEXT)
+libgfsphys_a-idea_ncout_phys.$(OBJEXT) : libgfsphys_a-resol_def.$(OBJEXT) libgfsphys_a-layout1.$(OBJEXT) \
+          libgfsphysf_a-gfs_physics_gridgr_mod.$(OBJEXT)
 libgfsphys_a-idea_saber.$(OBJEXT) : libgfsphys_a-idea_das_smlt.$(OBJEXT)
 libgfsphys_a-idea_wamdiag3d_mod.$(OBJEXT) : libgfsphys_a-resol_def.$(OBJEXT)
 libgfsphys_a-wam_pass_diag_types.$(OBJEXT) : libgfsphys_a-idea_wamdiag3d_mod.$(OBJEXT)

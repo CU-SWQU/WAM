@@ -164,7 +164,7 @@ libidea_a-idea_tracer.$(OBJEXT) : libgfs_a-machine.$(OBJEXT) libidea_a-idea_comp
 libidea_a-idea_tracers_input.$(OBJEXT) : libidea_a-idea_io_units.$(OBJEXT) libidea_a-idea_composition.$(OBJEXT) libgfs_a-physcons.$(OBJEXT) libidea_a-idea_mpi_def.$(OBJEXT) 
 libidea_a-idea_trad_geopgrav.$(OBJEXT) : libgfs_a-machine.$(OBJEXT) libgfs_a-physcons.$(OBJEXT) libgfsf_a-tracer_const_h.$(OBJEXT) libidea_a-idea_solar_init.$(OBJEXT) 
 libidea_a-vert_def.$(OBJEXT) : libgfs_a-machine.$(OBJEXT)
-libidea_a-idea_vert_diff.$(OBJEXT) : libgfs_a-machine.$(OBJEXT) libidea_a-idea_composition.$(OBJEXT)
+libidea_a-idea_vert_diff.$(OBJEXT) : libgfs_a-machine.$(OBJEXT) libidea_a-idea_composition.$(OBJEXT) libgfs_a-physcons.$(OBJEXT)
 # drv
 libgfsdrv_a-nuopc_physics.$(OBJEXT) : libgfsf_a-radsw_param.$(OBJEXT) libgfs_a-machine.$(OBJEXT) \
 	libgfsf_a-radlw_param.$(OBJEXT) libgfs_a-physcons.$(OBJEXT) libgfs_a-funcphys.$(OBJEXT) \
