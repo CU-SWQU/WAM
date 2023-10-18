@@ -107,8 +107,6 @@ c$$$      REAL(KIND=KIND_IO4) Z(lnt2)
       real(kind=kind_evod) teref(levp1),ck5p(levp1)			! hmhj
  
  
-      INCLUDE 'function2'
-!!
 !!
       print *,' enter treadeo.io_fd '					! hmhj
       if (semilag) then

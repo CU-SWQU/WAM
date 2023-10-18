@@ -621,6 +621,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
+ac_fc_werror_flag=
 ac_subst_vars='am__EXEEXT_FALSE
 am__EXEEXT_TRUE
 LTLIBOBJS
@@ -4874,7 +4875,7 @@ esac
 
     ESMF_FC=`$GREP ESMF_${ax_lib_esmf_compiler}COMPILER $ax_lib_esmf_mk | $SED 's/.*=//'`
   ESMF_FCFLAGS=`$GREP ESMF_${ax_lib_esmf_compiler}COMPILEPATHS $ax_lib_esmf_mk | $SED 's/.*=//'`
-  ESMF_LDFLAGS=`$GREP ESMF_${ax_lib_esmf_compiler}LINKPATHS $ax_lib_esmf_mk | $SED 's/.*=//'`
+  ESMF_LDFLAGS=`$GREP '^ESMF_${ax_lib_esmf_compiler}LINKPATHS' $ax_lib_esmf_mk | $SED 's/.*=//'`
   ESMF_LIBS=`$GREP ESMF_${ax_lib_esmf_compiler}ESMFLINKLIBS $ax_lib_esmf_mk | $SED 's/.*=//'`
   ESMF_VERSION=`$GREP ESMF_VERSION_STRING= $ax_lib_esmf_mk | $SED 's/.*=//'`
 
@@ -8073,18 +8074,42 @@ else
 
 	ax_cv_fc_bigendian=unknown
 	ax_fc_bigendian_FCFLAGS_save="$FCFLAGS"
+
+ac_fc_werror_flag=yes
 	for ac_flag in "-convert big_endian" -fconvert=big-endian -qufmt=be -byteswapio
 	do
-	    cat > conftest.$ac_ext <<_ACEOF
+            as_CACHEVAR=`$as_echo "ax_cv_check_fcflags__$ac_flag" | $as_tr_sh`
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether Fortran compiler accepts $ac_flag" >&/dev/null
+$as_echo_n "checking whether Fortran compiler accepts $ac_flag... " >&/dev/null; }
+if eval \${$as_CACHEVAR+:} false; then :
+  $as_echo_n "(cached) " >&/dev/null
+else
+
+  ax_check_save_flags=$FCFLAGS
+  FCFLAGS="$FCFLAGS  $ac_flag"
+  cat > conftest.$ac_ext <<_ACEOF
       program main
 
       end
 _ACEOF
 if ac_fn_fc_try_compile "$LINENO"; then :
-  		ax_cv_fc_bigendian=$ac_flag; break
-
+  eval "$as_CACHEVAR=yes"
+else
+  eval "$as_CACHEVAR=no"
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+  FCFLAGS=$ax_check_save_flags
+fi
+eval ac_res=\$$as_CACHEVAR
+	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&/dev/null
+$as_echo "$ac_res" >&/dev/null; }
+if eval test \"x\$"$as_CACHEVAR"\" = x"yes"; then :
+  		ax_cv_fc_bigendian=$ac_flag; break
+
+else
+  :
+fi
+
         done
         rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
         FCFLAGS=$ax_fc_bigendian_FCFLAGS_save
@@ -8958,7 +8983,7 @@ esac
 
 
 # Output Makefiles
-ac_config_files="$ac_config_files Makefile src/Makefile src/fim/Makefile src/gen/Makefile src/gsm/Makefile src/gsm/dyn/Makefile src/gsm/libutil/Makefile src/gsm/phys/Makefile src/io/Makefile src/nmm/Makefile src/phys/Makefile src/post/Makefile src/share/Makefile"
+ac_config_files="$ac_config_files Makefile src/Makefile src/gen/Makefile src/gsm/Makefile src/gsm/dyn/Makefile src/gsm/libutil/Makefile src/gsm/phys/Makefile src/io/Makefile src/phys/Makefile src/post/Makefile src/share/Makefile"
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
@@ -9712,14 +9737,12 @@ do
     "depfiles") CONFIG_COMMANDS="$CONFIG_COMMANDS depfiles" ;;
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
     "src/Makefile") CONFIG_FILES="$CONFIG_FILES src/Makefile" ;;
-    "src/fim/Makefile") CONFIG_FILES="$CONFIG_FILES src/fim/Makefile" ;;
     "src/gen/Makefile") CONFIG_FILES="$CONFIG_FILES src/gen/Makefile" ;;
     "src/gsm/Makefile") CONFIG_FILES="$CONFIG_FILES src/gsm/Makefile" ;;
     "src/gsm/dyn/Makefile") CONFIG_FILES="$CONFIG_FILES src/gsm/dyn/Makefile" ;;
     "src/gsm/libutil/Makefile") CONFIG_FILES="$CONFIG_FILES src/gsm/libutil/Makefile" ;;
     "src/gsm/phys/Makefile") CONFIG_FILES="$CONFIG_FILES src/gsm/phys/Makefile" ;;
     "src/io/Makefile") CONFIG_FILES="$CONFIG_FILES src/io/Makefile" ;;
-    "src/nmm/Makefile") CONFIG_FILES="$CONFIG_FILES src/nmm/Makefile" ;;
     "src/phys/Makefile") CONFIG_FILES="$CONFIG_FILES src/phys/Makefile" ;;
     "src/post/Makefile") CONFIG_FILES="$CONFIG_FILES src/post/Makefile" ;;
     "src/share/Makefile") CONFIG_FILES="$CONFIG_FILES src/share/Makefile" ;;
