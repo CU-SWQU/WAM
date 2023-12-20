@@ -142,6 +142,7 @@
       use gfs_physics_aoi_var_mod
       use module_CPLFIELDS, only: NImportFields
       use wam_ifp_mod, only: read_ifp
+      use wam_diag3d_mod, only: g3dwamd_alloc
 !#ifndef IBM
 !     USE omp_lib
 !#endif
@@ -156,7 +157,12 @@
 ! this subroutine sets up the internal state variables,
 ! allocate internal state arrays for initializing the gfs system.
 !----------------------------------------------------------------
-
+      use idea_iau_hwm,           only: IDEA_INIT_IAU_HWM,Uhwm,Vhwm,gpy_U_hwm,gpy_V_hwm,nza_hwm
+      use idea_iau_hwm,           only: irec_anl, Last_IAU_DATE8
+      use wam_pass_diag_types,    only: gis_wam
+      use idea_gdas_calendar,     only: IREC_GDAS, init_idea_gdas_calendar 
+      integer                        :: IAU_DATE_8, IAU_IREC
+ 
       integer, parameter :: iunit=101
       type(gfs_physics_internal_state), pointer, intent(inout) :: gis_phy
       integer,                                   intent(out)   :: rc
@@ -825,6 +831,83 @@
 !      enddo                                             
 !!
 !!
+
+!Garima- 2022
+      if (lsidea) then
+           print *, ' GM_IDEA_INIT_IAU_FHOUr=', FHOUR
+	   print *, ' GM_IDEA_INIT_IAU_IDATE=', IDATE
+
+!           CALL IAU_UPDATE_DATE8(Idate, Fhour,  Curr_NC_WAMDAY)   
+           IAU_DATE_8 = Idate(4)*10000+Idate(2)*100+Idate(3)
+
+           if (me == 0) then
+!            print *, ' VAY_IDEA_INIT_IAU= ', IAU_IREC, IAU_DATE_8
+            print *, ' GM_IDEA_INIT_IAU=Idate4 ', Idate(4)
+           endif
+!
+!              g3dwamd_alloc(dim1, dim2, dim3, g3d_wamfld, iret)
+!
+! How to pass "allocated-type" gis_wam => do_physics_one_step.f
+!
+       call g3dwamd_alloc(lonr, lats_node_r_max, levs, gis_wam, ierr)  
+!
+!
+      
+!
+!RELATE CHOICE of IAU_IREC with HOUR use IAU_DATE_8 => IAU_DATE_10 to select IAU_IREC=[1,2,3,4] =[00,06,12,18]
+!
+
+       if (.not. allocated(gpy_U_hwm)) then
+         allocate(gpy_U_hwm(lonr,lats_node_r,nza_hwm),stat=ierr)
+         allocate(gpy_V_hwm(lonr,lats_node_r,nza_hwm),stat=ierr)
+         IAU_IREC = 1            !
+	 CALL init_idea_gdas_calendar(IDATE)
+         IAU_IREC = IREC_GDAS
+	 print *, ' VAY2020 gfs_physics_initialize allocate  gpy_Uan' , IAU_IREC,ierr 
+       endif
+! 
+      
+          !print *,'Gar calling init_hwm'
+          call IDEA_INIT_IAU_HWM(IAU_DATE_8, IAU_Irec, me)
+          !print *, 'Gar init in gfs physics done' 
+          irec_anl = IAU_Irec
+          Last_IAU_DATE8 = IAU_DATE_8
+
+!           wrkanl =Tanl
+!        print *, 'GM before wrkanl=Tanl ' , me,  maxval(Tanl), minval(Tanl)  
+!        print *, 'GM before wrkanl=Tanl ' , me,  maxval(wrkanl), minval(wrkanl)  
+!        print *, 'GM lonr, latr,levs ', lonr, latr,levs 
+!        print *, 'GM nxa, nya, nza ', nxa, nya, nza 
+!       endif
+!       print *, ' before mpi_bcast(wrkanl ' , me,  maxval(wrkanl), minval(wrkanl)       
+!           call mpi_bcast(wrkanl,lonr*latr*nza, MPI_REAL8, 0, MPI_COMM_ALL,info)
+!           call mpi_barrier(mpi_comm_all,info)
+!       print *, ' after mpi_bcast( wrkanl, ' , me, maxval(wrkanl), minval(wrkanl)      
+!
+!
+!       print *, ' before initialize IDEA_IAU_SPLIT3D ' , me, shape(Uhwm),shape(gpy_U_hwm)
+       call IDEA_IAU_SPLIT3D(Uhwm,nza_hwm, me, gpy_U_hwm, gis_phy%GLOBAL_LATS_R,gis_phy%LONSPERLAR)
+       call IDEA_IAU_SPLIT3D(Vhwm,nza_hwm, me, gpy_V_hwm, gis_phy%GLOBAL_LATS_R,gis_phy%LONSPERLAR)
+!       print *, 'after initialize IDEA_IAU_SPLIT3D', me, shape(Vhwm),shape(gpy_V_hwm)
+
+       !print *, 'GM Tanl ' , me,  maxval(Tanl), minval(Tanl)
+       !print *, 'GM gpy_Tan ' , me,  maxval(gpy_Tan), minval(gpy_Tan)
+       !print *, ' after IDEA_IAU_SPLIT3D ' , me
+
+       !print *, 'Gar Uhwm ' , me,  maxval(Uhwm), minval(Uhwm)
+       !print *, 'Gar Vhwm ' , me,  maxval(Vhwm), minval(Vhwm)
+       !print *, 'Gar gpy Uhwm ' , me,  maxval(gpy_U_hwm), minval(gpy_U_hwm)
+       !print *, 'Gar gpy Vhwm ' , me,  maxval(gpy_V_hwm), minval(gpy_V_hwm)
+
+       !print *, ' Gar after HWM IDEA_IAU_SPLIT3D ' , me
+
+
+      endif      !lsidea
+!           call mpi_barrier(mpi_comm_all,info)
+
+
+
+
 
 !  ---  set up sigma levels before radiation initialization
 
