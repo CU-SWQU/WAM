@@ -8,8 +8,9 @@
      &                     thermodyn_id,sfcpress_id,gen_coord_hybrid,me,
      &                     mpi_ior, mpi_comm, fhour, kstep,
      &                     gzmt, gmmt, gjhr, gshr, go2dr, f107, f107d,
+     &                     f107adj,
      &                     kp, kpa, nhp, nhpi, shp, shpi, swbt, swang,
-     &                     swvel, swbz, swden)
+     &                     swvel, swbz, swden, jhfac)
 
 !-----------------------------------------------------------------------
 ! add temp, wind changes due to viscosity and thermal conductivity
@@ -128,6 +129,7 @@
 ! Input parameters
       real, intent(in) :: f107, f107d, kp, kpa, nhp, nhpi, shp, shpi
       real, intent(in) :: swbz, swvel, swbt, swang, swden
+      real, intent(in) :: f107adj, jhfac
 
 ! Local variables
 !      real,parameter      :: pa2cb=0.001,cb2pa=1000.

@@ -659,6 +659,7 @@
 
         int_state % forcing % f107  = farr % f107 (kint) * wgt + farr % f107 (kint+1) * (1 - wgt)
         int_state % forcing % f107d = farr % f107d(kint) * wgt + farr % f107d(kint+1) * (1 - wgt)
+        int_state % forcing % f107adj=farr % f107adj(kint)*wgt + farr % f107adj(kint+1)*(1 - wgt)
         int_state % forcing % kp    = farr % kp   (kint) * wgt + farr % kp   (kint+1) * (1 - wgt)
         int_state % forcing % kpa   = farr % kpa  (kint) * wgt + farr % kpa  (kint+1) * (1 - wgt)
         int_state % forcing % nhp   = farr % nhp  (kint) * wgt + farr % nhp  (kint+1) * (1 - wgt)
@@ -670,11 +671,13 @@
         int_state % forcing % swvel = farr % swvel(kint) * wgt + farr % swvel(kint+1) * (1 - wgt)
         int_state % forcing % swbz  = farr % swbz (kint) * wgt + farr % swbz (kint+1) * (1 - wgt)
         int_state % forcing % swbt  = farr % swbt (kint) * wgt + farr % swbt (kint+1) * (1 - wgt)
+        int_state % forcing % jhfac = farr % jhfac(kint) * wgt + farr % jhfac(kint+1) * (1 - wgt)
       else
         kint = size(farr % f107)
 
         int_state % forcing % f107  = farr % f107 (kint)
         int_state % forcing % f107d = farr % f107d(kint)
+        int_state % forcing % f107adj=farr % f107adj(kint)
         int_state % forcing % kp    = farr % kp   (kint)
         int_state % forcing % kpa   = farr % kpa  (kint)
         int_state % forcing % nhp   = farr % nhp  (kint)
@@ -686,6 +689,7 @@
         int_state % forcing % swvel = farr % swvel(kint)
         int_state % forcing % swbz  = farr % swbz (kint)
         int_state % forcing % swbt  = farr % swbt (kint)
+        int_state % forcing % jhfac = farr % jhfac(kint)
       end if
 !      PRINT*, 'In phys grid comp, kdt, kdt_3h=', int_state%kdt, kdt_3h
 
