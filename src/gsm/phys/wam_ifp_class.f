@@ -16,6 +16,9 @@ module wam_ifp_class
         real, allocatable, dimension(:) :: swang
         real, allocatable, dimension(:) :: swden
         real, allocatable, dimension(:) :: jhfac
+
+        logical :: default_f107adj
+        logical :: default_jhfac
       end type farr_t
 
       type forcing_t

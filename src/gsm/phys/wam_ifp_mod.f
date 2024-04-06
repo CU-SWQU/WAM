@@ -30,6 +30,9 @@
 
       call dealloc()
 
+      farr % default_f107adj = .false.
+      farr % default_jhfac   = .false.
+
       call io % open(filename, "r")
       call io % description("skip", params % skip)
       call io % description("ifp_interval", params % ifp_interval)
@@ -38,7 +41,6 @@
       call alloc(dims(1))
       call io % read("f107",    farr % f107)
       call io % read("f107d",   farr % f107d)
-      call io % read("f107adj", farr % f107adj)
       call io % read("kp",      farr % kp)
       call io % read("kpa",     farr % kpa)
       call io % read("nhp",     farr % nhp)
@@ -50,7 +52,12 @@
       call io % read("swvel",   farr % swvel)
       call io % read("swbz",    farr % swbz)
       call io % read("swbt",    farr % swbt)
+
+      call io % read("f107adj", farr % f107adj)
+      if (io % err % check()) farr % default_f107adj = .true.
       call io % read("jhfac",   farr % jhfac)
+      if (io % err % check()) farr % default_jhfac   = .true.
+
       call io % close()
 
       end subroutine read_ifp
