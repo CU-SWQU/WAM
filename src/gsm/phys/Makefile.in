@@ -133,8 +133,13 @@ am_libgfsphys_a_OBJECTS = libgfsphys_a-aoicpl_prep.$(OBJEXT) \
 	libgfsphys_a-glats_physics.$(OBJEXT) \
 	libgfsphys_a-gloopb.$(OBJEXT) libgfsphys_a-gloopr.$(OBJEXT) \
 	libgfsphys_a-gribit_gsm.$(OBJEXT) \
-	libgfsphys_a-hpmdummy.$(OBJEXT) libgfsphys_a-info.$(OBJEXT) \
-	libgfsphys_a-lats_shuff.$(OBJEXT) \
+	libgfsphys_a-hpmdummy.$(OBJEXT) \
+	libgfsphys_a-idea_iau_split.$(OBJEXT) \
+	libgfsphys_a-idea_gdas_calendar.$(OBJEXT) \
+	libgfsphys_a-idea_wamdiag3d_mod.$(OBJEXT) \
+	libgfsphys_a-wam_pass_diag_types.$(OBJEXT) \
+	libgfsphys_a-idea_ncout_gain3d.$(OBJEXT) \
+	libgfsphys_a-info.$(OBJEXT) libgfsphys_a-lats_shuff.$(OBJEXT) \
 	libgfsphys_a-layout1.$(OBJEXT) \
 	libgfsphys_a-lon_lat_para.$(OBJEXT) \
 	libgfsphys_a-mod_state.$(OBJEXT) \
@@ -394,7 +399,9 @@ libgfsphys_a_SOURCES = aoicpl_prep.f compns_physics.f coordinate_def.f \
 	coundummy.f d3d_def.f dfi_fixwr.f do_physics_one_step.f fix_fields.f fix_fields_idea_rst.f \
 	fld_collect.f fld_collect_nst.f gbphys_adv_hyb_gc.f gbphys_adv_hyb_gc_h.f gcycle.f \
 	getcon_physics.f get_lats_node_shuff_r_fix.f GFS_simple_scatter.f gg_def.f \
-	glats_physics.f gloopb.f gloopr.f gribit_gsm.f hpmdummy.f info.f lats_shuff.f layout1.f \
+	glats_physics.f gloopb.f gloopr.f gribit_gsm.f hpmdummy.f \
+	idea_iau_split.f idea_gdas_calendar.f idea_wamdiag3d_mod.f wam_pass_diag_types.f idea_ncout_gain3d.f \
+	info.f lats_shuff.f layout1.f \
 	lon_lat_para.f mod_state.f mpi_def.f mpi_quit.f namelist_physics_def.f \
 	para_fixio_w.f para_nst_w.f read_fix.f reduce_lons_grid_module.f \
 	resol_def.f setlats.f setlats_r_slg.f sortrx.f vert_def.f wrt3d.f \
@@ -608,6 +615,36 @@ libgfsphys_a-hpmdummy.o: hpmdummy.f
 
 libgfsphys_a-hpmdummy.obj: hpmdummy.f
 	$(AM_V_F77)$(F77) $(libgfsphys_a_FFLAGS) $(FFLAGS) -c -o libgfsphys_a-hpmdummy.obj `if test -f 'hpmdummy.f'; then $(CYGPATH_W) 'hpmdummy.f'; else $(CYGPATH_W) '$(srcdir)/hpmdummy.f'; fi`
+
+libgfsphys_a-idea_iau_split.o: idea_iau_split.f
+	$(AM_V_F77)$(F77) $(libgfsphys_a_FFLAGS) $(FFLAGS) -c -o libgfsphys_a-idea_iau_split.o `test -f 'idea_iau_split.f' || echo '$(srcdir)/'`idea_iau_split.f
+
+libgfsphys_a-idea_iau_split.obj: idea_iau_split.f
+	$(AM_V_F77)$(F77) $(libgfsphys_a_FFLAGS) $(FFLAGS) -c -o libgfsphys_a-idea_iau_split.obj `if test -f 'idea_iau_split.f'; then $(CYGPATH_W) 'idea_iau_split.f'; else $(CYGPATH_W) '$(srcdir)/idea_iau_split.f'; fi`
+
+libgfsphys_a-idea_gdas_calendar.o: idea_gdas_calendar.f
+	$(AM_V_F77)$(F77) $(libgfsphys_a_FFLAGS) $(FFLAGS) -c -o libgfsphys_a-idea_gdas_calendar.o `test -f 'idea_gdas_calendar.f' || echo '$(srcdir)/'`idea_gdas_calendar.f
+
+libgfsphys_a-idea_gdas_calendar.obj: idea_gdas_calendar.f
+	$(AM_V_F77)$(F77) $(libgfsphys_a_FFLAGS) $(FFLAGS) -c -o libgfsphys_a-idea_gdas_calendar.obj `if test -f 'idea_gdas_calendar.f'; then $(CYGPATH_W) 'idea_gdas_calendar.f'; else $(CYGPATH_W) '$(srcdir)/idea_gdas_calendar.f'; fi`
+
+libgfsphys_a-idea_wamdiag3d_mod.o: idea_wamdiag3d_mod.f
+	$(AM_V_F77)$(F77) $(libgfsphys_a_FFLAGS) $(FFLAGS) -c -o libgfsphys_a-idea_wamdiag3d_mod.o `test -f 'idea_wamdiag3d_mod.f' || echo '$(srcdir)/'`idea_wamdiag3d_mod.f
+
+libgfsphys_a-idea_wamdiag3d_mod.obj: idea_wamdiag3d_mod.f
+	$(AM_V_F77)$(F77) $(libgfsphys_a_FFLAGS) $(FFLAGS) -c -o libgfsphys_a-idea_wamdiag3d_mod.obj `if test -f 'idea_wamdiag3d_mod.f'; then $(CYGPATH_W) 'idea_wamdiag3d_mod.f'; else $(CYGPATH_W) '$(srcdir)/idea_wamdiag3d_mod.f'; fi`
+
+libgfsphys_a-wam_pass_diag_types.o: wam_pass_diag_types.f
+	$(AM_V_F77)$(F77) $(libgfsphys_a_FFLAGS) $(FFLAGS) -c -o libgfsphys_a-wam_pass_diag_types.o `test -f 'wam_pass_diag_types.f' || echo '$(srcdir)/'`wam_pass_diag_types.f
+
+libgfsphys_a-wam_pass_diag_types.obj: wam_pass_diag_types.f
+	$(AM_V_F77)$(F77) $(libgfsphys_a_FFLAGS) $(FFLAGS) -c -o libgfsphys_a-wam_pass_diag_types.obj `if test -f 'wam_pass_diag_types.f'; then $(CYGPATH_W) 'wam_pass_diag_types.f'; else $(CYGPATH_W) '$(srcdir)/wam_pass_diag_types.f'; fi`
+
+libgfsphys_a-idea_ncout_gain3d.o: idea_ncout_gain3d.f
+	$(AM_V_F77)$(F77) $(libgfsphys_a_FFLAGS) $(FFLAGS) -c -o libgfsphys_a-idea_ncout_gain3d.o `test -f 'idea_ncout_gain3d.f' || echo '$(srcdir)/'`idea_ncout_gain3d.f
+
+libgfsphys_a-idea_ncout_gain3d.obj: idea_ncout_gain3d.f
+	$(AM_V_F77)$(F77) $(libgfsphys_a_FFLAGS) $(FFLAGS) -c -o libgfsphys_a-idea_ncout_gain3d.obj `if test -f 'idea_ncout_gain3d.f'; then $(CYGPATH_W) 'idea_ncout_gain3d.f'; else $(CYGPATH_W) '$(srcdir)/idea_ncout_gain3d.f'; fi`
 
 libgfsphys_a-info.o: info.f
 	$(AM_V_F77)$(F77) $(libgfsphys_a_FFLAGS) $(FFLAGS) -c -o libgfsphys_a-info.o `test -f 'info.f' || echo '$(srcdir)/'`info.f
@@ -1204,6 +1241,12 @@ libgfsphysf_a-gfs_phy_states_mod.$(OBJEXT) : libgfsphys_a-namelist_physics_def.$
 	libgfsphys_a-gg_def.$(OBJEXT)
 libgfsphysf_a-wam_ifp_mod.$(OBJEXT) : libgfsphys_a-mpi_def.$(OBJEXT) libgfsphysf_a-wam_ifp_class.$(OBJEXT) \
 	libgfsphys_a-layout1.$(OBJEXT)
+libgfsphys_a-idea_iau_split.$(OBJEXT) : libgfsphys_a-resol_def.$(OBJEXT) libgfsphys_a-layout1.$(OBJEXT)
+libgfsphys_a-idea_wamdiag3d_mod.$(OBJEXT) : libgfsphys_a-resol_def.$(OBJEXT)
+libgfsphys_a-wam_pass_diag_types.$(OBJEXT) : libgfsphys_a-idea_wamdiag3d_mod.$(OBJEXT)
+libgfsphys_a-idea_gdas_calendar.$(OBJEXT) : libgfsphys_a-resol_def.$(OBJEXT)
+libgfsphys_a-idea_ncout_gain3d.$(OBJEXT) :libgfsphys_a-resol_def.$(OBJEXT) libgfsphys_a-layout1.$(OBJEXT) \
+    libgfsphys_a-mpi_def.$(OBJEXT)
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

@@ -7,7 +7,9 @@ libgfsphys_a_SOURCES = aoicpl_prep.f compns_physics.f coordinate_def.f \
 	coundummy.f d3d_def.f dfi_fixwr.f do_physics_one_step.f fix_fields.f fix_fields_idea_rst.f \
 	fld_collect.f fld_collect_nst.f gbphys_adv_hyb_gc.f gbphys_adv_hyb_gc_h.f gcycle.f \
 	getcon_physics.f get_lats_node_shuff_r_fix.f GFS_simple_scatter.f gg_def.f \
-	glats_physics.f gloopb.f gloopr.f gribit_gsm.f hpmdummy.f info.f lats_shuff.f layout1.f \
+	glats_physics.f gloopb.f gloopr.f gribit_gsm.f hpmdummy.f \
+	idea_iau_split.f idea_gdas_calendar.f idea_wamdiag3d_mod.f wam_pass_diag_types.f idea_ncout_gain3d.f \
+	info.f lats_shuff.f layout1.f \
 	lon_lat_para.f mod_state.f mpi_def.f mpi_quit.f namelist_physics_def.f \
 	para_fixio_w.f para_nst_w.f read_fix.f reduce_lons_grid_module.f \
 	resol_def.f setlats.f setlats_r_slg.f sortrx.f vert_def.f wrt3d.f \
@@ -147,3 +149,10 @@ libgfsphysf_a-gfs_phy_states_mod.$(OBJEXT) : libgfsphys_a-namelist_physics_def.$
 	libgfsphys_a-gg_def.$(OBJEXT)
 libgfsphysf_a-wam_ifp_mod.$(OBJEXT) : libgfsphys_a-mpi_def.$(OBJEXT) libgfsphysf_a-wam_ifp_class.$(OBJEXT) \
 	libgfsphys_a-layout1.$(OBJEXT)
+libgfsphys_a-idea_iau_split.$(OBJEXT) : libgfsphys_a-resol_def.$(OBJEXT) libgfsphys_a-layout1.$(OBJEXT)
+libgfsphys_a-idea_wamdiag3d_mod.$(OBJEXT) : libgfsphys_a-resol_def.$(OBJEXT)
+libgfsphys_a-wam_pass_diag_types.$(OBJEXT) : libgfsphys_a-idea_wamdiag3d_mod.$(OBJEXT)
+libgfsphys_a-idea_gdas_calendar.$(OBJEXT) : libgfsphys_a-resol_def.$(OBJEXT)
+libgfsphys_a-idea_ncout_gain3d.$(OBJEXT) :libgfsphys_a-resol_def.$(OBJEXT) libgfsphys_a-layout1.$(OBJEXT) \
+    libgfsphys_a-mpi_def.$(OBJEXT)
+
