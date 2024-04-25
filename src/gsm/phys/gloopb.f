@@ -857,13 +857,13 @@
      &                     me,mpi_r_io_r,MPI_COMM_ALL, fhour, kdt,
      &                     gzmt, gmmt, gjhr, gshr, go2dr,
      &                     forcing % f107,   forcing % f107d,
-     &                     forcing % f107adj,
      &                     forcing % kp,     forcing % kpa,
      &                     forcing % nhp,    forcing % nhpi,
      &                     forcing % shp,    forcing % shpi,
      &                     forcing % swbt,   forcing % swang,
      &                     forcing % swvel,  forcing % swbz,
-     &                     forcing % swden,  forcing % jhfac)
+     &                     forcing % swden,  forcing % jhfac,
+     &                     forcing % euvfac)
 !
 !
 !

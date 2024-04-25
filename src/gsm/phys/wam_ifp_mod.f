@@ -30,8 +30,8 @@
 
       call dealloc()
 
-      farr % default_f107adj = .false.
-      farr % default_jhfac   = .false.
+      farr % default_euvfac = .false.
+      farr % default_jhfac  = .false.
 
       call io % open(filename, "r")
       call io % description("skip", params % skip)
@@ -53,10 +53,10 @@
       call io % read("swbz",    farr % swbz)
       call io % read("swbt",    farr % swbt)
 
-      call io % read("f107adj", farr % f107adj)
-      if (io % err % check()) farr % default_f107adj = .true.
+      call io % read("euvfac", farr % euvfac)
+      if (io % err % check()) farr % default_euvfac = .true.
       call io % read("jhfac",   farr % jhfac)
-      if (io % err % check()) farr % default_jhfac   = .true.
+      if (io % err % check()) farr % default_jhfac  = .true.
 
       call io % close()
 
@@ -65,41 +65,41 @@
       subroutine alloc(dim)
         integer, intent(in) :: dim
 
-        if (.not.allocated(farr%f107))    allocate(farr%f107 (dim))
-        if (.not.allocated(farr%f107d))   allocate(farr%f107d(dim))
-        if (.not.allocated(farr%f107adj)) allocate(farr%f107adj(dim))
-        if (.not.allocated(farr%kp))      allocate(farr%kp   (dim))
-        if (.not.allocated(farr%kpa))     allocate(farr%kpa  (dim))
-        if (.not.allocated(farr%nhp))     allocate(farr%nhp  (dim))
-        if (.not.allocated(farr%nhpi))    allocate(farr%nhpi (dim))
-        if (.not.allocated(farr%shp))     allocate(farr%shp  (dim))
-        if (.not.allocated(farr%shpi))    allocate(farr%shpi (dim))
-        if (.not.allocated(farr%swden))   allocate(farr%swden(dim))
-        if (.not.allocated(farr%swvel))   allocate(farr%swvel(dim))
-        if (.not.allocated(farr%swang))   allocate(farr%swang(dim))
-        if (.not.allocated(farr%swbz))    allocate(farr%swbz (dim))
-        if (.not.allocated(farr%swbt))    allocate(farr%swbt (dim))
-        if (.not.allocated(farr%jhfac))   allocate(farr%jhfac(dim))
+        if (.not.allocated(farr%f107))   allocate(farr%f107 (dim))
+        if (.not.allocated(farr%f107d))  allocate(farr%f107d(dim))
+        if (.not.allocated(farr%kp))     allocate(farr%kp   (dim))
+        if (.not.allocated(farr%kpa))    allocate(farr%kpa  (dim))
+        if (.not.allocated(farr%nhp))    allocate(farr%nhp  (dim))
+        if (.not.allocated(farr%nhpi))   allocate(farr%nhpi (dim))
+        if (.not.allocated(farr%shp))    allocate(farr%shp  (dim))
+        if (.not.allocated(farr%shpi))   allocate(farr%shpi (dim))
+        if (.not.allocated(farr%swden))  allocate(farr%swden(dim))
+        if (.not.allocated(farr%swvel))  allocate(farr%swvel(dim))
+        if (.not.allocated(farr%swang))  allocate(farr%swang(dim))
+        if (.not.allocated(farr%swbz))   allocate(farr%swbz (dim))
+        if (.not.allocated(farr%swbt))   allocate(farr%swbt (dim))
+        if (.not.allocated(farr%jhfac))  allocate(farr%jhfac(dim))
+        if (.not.allocated(farr%euvfac)) allocate(farr%euvfac(dim))
 
       end subroutine alloc
 
       subroutine dealloc()
 
-        if (allocated(farr%f107))    deallocate(farr%f107)
-        if (allocated(farr%f107d))   deallocate(farr%f107d)
-        if (allocated(farr%f107adj)) deallocate(farr%f107adj)
-        if (allocated(farr%kp))      deallocate(farr%kp)
-        if (allocated(farr%kpa))     deallocate(farr%kpa)
-        if (allocated(farr%nhp))     deallocate(farr%nhp)
-        if (allocated(farr%nhpi))    deallocate(farr%nhpi)
-        if (allocated(farr%shp))     deallocate(farr%shp)
-        if (allocated(farr%shpi))    deallocate(farr%shpi)
-        if (allocated(farr%swden))   deallocate(farr%swden)
-        if (allocated(farr%swvel))   deallocate(farr%swvel)
-        if (allocated(farr%swang))   deallocate(farr%swang)
-        if (allocated(farr%swbz))    deallocate(farr%swbz)
-        if (allocated(farr%swbt))    deallocate(farr%swbt)
-        if (allocated(farr%jhfac))    deallocate(farr%jhfac)
+        if (allocated(farr%f107))   deallocate(farr%f107)
+        if (allocated(farr%f107d))  deallocate(farr%f107d)
+        if (allocated(farr%kp))     deallocate(farr%kp)
+        if (allocated(farr%kpa))    deallocate(farr%kpa)
+        if (allocated(farr%nhp))    deallocate(farr%nhp)
+        if (allocated(farr%nhpi))   deallocate(farr%nhpi)
+        if (allocated(farr%shp))    deallocate(farr%shp)
+        if (allocated(farr%shpi))   deallocate(farr%shpi)
+        if (allocated(farr%swden))  deallocate(farr%swden)
+        if (allocated(farr%swvel))  deallocate(farr%swvel)
+        if (allocated(farr%swang))  deallocate(farr%swang)
+        if (allocated(farr%swbz))   deallocate(farr%swbz)
+        if (allocated(farr%swbt))   deallocate(farr%swbt)
+        if (allocated(farr%jhfac))  deallocate(farr%jhfac)
+        if (allocated(farr%euvfac)) deallocate(farr%euvfac)
 
       end subroutine dealloc
 ! legacy code below, not sure this is still needed

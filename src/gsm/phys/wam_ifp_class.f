@@ -3,7 +3,6 @@ module wam_ifp_class
       type farr_t
         real, allocatable, dimension(:) :: f107
         real, allocatable, dimension(:) :: f107d
-        real, allocatable, dimension(:) :: f107adj
         real, allocatable, dimension(:) :: kp
         real, allocatable, dimension(:) :: kpa
         real, allocatable, dimension(:) :: nhp
@@ -16,15 +15,15 @@ module wam_ifp_class
         real, allocatable, dimension(:) :: swang
         real, allocatable, dimension(:) :: swden
         real, allocatable, dimension(:) :: jhfac
+        real, allocatable, dimension(:) :: euvfac
 
-        logical :: default_f107adj
+        logical :: default_euvfac
         logical :: default_jhfac
       end type farr_t
 
       type forcing_t
         real :: f107
         real :: f107d
-        real :: f107adj
         real :: kp
         real :: kpa
         real :: nhp
@@ -37,6 +36,7 @@ module wam_ifp_class
         real :: swang
         real :: swden
         real :: jhfac
+        real :: euvfac
       end type forcing_t
 
       type param_t
