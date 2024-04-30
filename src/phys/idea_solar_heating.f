@@ -17,7 +17,8 @@
 !=============================================================================
       subroutine idea_sheat(im,ix,levs,te,dt,cospass,
      & o_n,o2_n,o3_n,n2_n,     
-     & ro,cp,lat,dayno,prsl,zg,grav,am,maglat,dt6dt, f107, f107d, kpa)
+     & ro,cp,lat,dayno,prsl,zg,grav,am,maglat,dt6dt, f107, f107d, kpa,
+     & da_sheat_fac)
 !----------------------------------------------------------------------------
 ! calculete solar heating, NO coooling from 2Pa up
 !----------------------------------------------------------------------------
@@ -51,6 +52,7 @@
       real, intent(in)    :: zg(ix,levs)!layer height (m)
       real, intent(in)    :: grav(ix,levs)! (m/s2)
       real, intent(in)    :: ro(ix,levs)  ! density (kg/m3) 
+      real, intent(in)    :: da_sheat_fac ! IDEA DA solar heating scaling factor
       real, intent(inout) :: dt6dt(ix,levs,6)  ! 
       real, intent(out)   :: dt(ix,levs) ! (K/s) solar heating rate
 ! Locals
@@ -98,9 +100,6 @@
        call solar_heat_dissociation_TIEGCM(levs,nps,o,o2,o3,n2,           
      &     ho,ho2,hn2, f107,f107d,cospass(i),dayno,         
      &     ht,sheat,sh1,sh2,dissociation_rate, Jo3)
-!     ELSE                ! ' OLD-SOLAR_EUV_SRC-2014'
-!        call solar_heat(levs,nps,o,o2,n2,ho,ho2,hn2,effeuv,effuv,       
-!     &   f107, cospass(i),sheat,sh1,sh2)
        ENDIF
 
        call getno1d(levs,f107,kpa,maglat(i),dayno,
@@ -112,10 +111,10 @@
 !    
           rcpro = 1./(cp(i,k)*ro(i,k))
           dt6dt(i,k,1)=qno(k)*rcpro
-          dt6dt(i,k,3)=sh1(k)*rcpro
-          dt6dt(i,k,4)=sh2(k)*rcpro
+          dt6dt(i,k,3)=sh1(k)*rcpro*da_sheat_fac
+          dt6dt(i,k,4)=sh2(k)*rcpro*da_sheat_fac
 !net Q
-          dt(i,k)=(sheat(k)-qno(k))*rcpro
+          dt(i,k)=(sheat(k)*da_sheat_fac-qno(k))*rcpro
 ! 
         enddo ! k
         do k=1,nps-1

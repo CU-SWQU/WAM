@@ -9,7 +9,7 @@
      &                     mpi_ior, mpi_comm, fhour, kstep,
      &                     gzmt, gmmt, gjhr, gshr, go2dr, f107, f107d,
      &                     kp, kpa, nhp, nhpi, shp, shpi, swbt, swang,
-     &                     swvel, swbz, swden, jhfac, euvfac)
+     &                     swvel, swbz, swden, da_jh_fac, da_sheat_fac)
 
 !-----------------------------------------------------------------------
 ! add temp, wind changes due to viscosity and thermal conductivity
@@ -128,7 +128,7 @@
 ! Input parameters
       real, intent(in) :: f107, f107d, kp, kpa, nhp, nhpi, shp, shpi
       real, intent(in) :: swbz, swvel, swbt, swang, swden
-      real, intent(in) :: euvfac, jhfac
+      real, intent(in) :: da_sheat_fac, da_jh_fac
 
 ! Local variables
 !      real,parameter      :: pa2cb=0.001,cb2pa=1000.
@@ -315,7 +315,7 @@
 !
       call idea_sheat(im,ix,levs,adt,dtRad,cospass,o_n,o2_n,o3_n,n2_n,
      &                rho, cp,lat,dayno,prsl,zg,grav,am,maglat,dt6dt,
-     &                f107, f107d, kpa)
+     &                f107, f107d, kpa, da_sheat_fac)
 
 ! Merge the  IPE back coupling WAM dtrad array into WAM.
 !-------------------------------------------------------
@@ -395,7 +395,7 @@
      &              adu,adv,adt,dudt,dvdt,dtdt,rho,xlat,xlon,ix,im,levs,
      &              dayno,utsec,sda,maglon,maglat,btot,dipang,essa,
      &              f107, f107d, kp, nhp, nhpi, shp, shpi, SPW_DRIVERS,
-     &              swbt, swang, swvel, swbz, swden)
+     &              swbt, swang, swvel, swbz, swden, da_jh_fac)
 ! Merge the  IPE back coupling WAM dudt, dvdt and dtdt arrays into WAM.
 !----------------------------------------------------------------------
       IF(ipe_to_wam_coupling) THEN

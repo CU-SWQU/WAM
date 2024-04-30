@@ -30,8 +30,8 @@
 
       call dealloc()
 
-      farr % default_euvfac = .false.
-      farr % default_jhfac  = .false.
+      farr % default_sheatfac = .false.
+      farr % default_jhfac    = .false.
 
       call io % open(filename, "r")
       call io % description("skip", params % skip)
@@ -53,8 +53,8 @@
       call io % read("swbz",    farr % swbz)
       call io % read("swbt",    farr % swbt)
 
-      call io % read("euvfac", farr % euvfac)
-      if (io % err % check()) farr % default_euvfac = .true.
+      call io % read("sheatfac", farr % sheatfac)
+      if (io % err % check()) farr % default_sheatfac = .true.
       call io % read("jhfac",   farr % jhfac)
       if (io % err % check()) farr % default_jhfac  = .true.
 
@@ -79,7 +79,7 @@
         if (.not.allocated(farr%swbz))   allocate(farr%swbz (dim))
         if (.not.allocated(farr%swbt))   allocate(farr%swbt (dim))
         if (.not.allocated(farr%jhfac))  allocate(farr%jhfac(dim))
-        if (.not.allocated(farr%euvfac)) allocate(farr%euvfac(dim))
+        if (.not.allocated(farr%sheatfac)) allocate(farr%sheatfac(dim))
 
       end subroutine alloc
 
@@ -99,7 +99,7 @@
         if (allocated(farr%swbz))   deallocate(farr%swbz)
         if (allocated(farr%swbt))   deallocate(farr%swbt)
         if (allocated(farr%jhfac))  deallocate(farr%jhfac)
-        if (allocated(farr%euvfac)) deallocate(farr%euvfac)
+        if (allocated(farr%sheatfac)) deallocate(farr%sheatfac)
 
       end subroutine dealloc
 ! legacy code below, not sure this is still needed

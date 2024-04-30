@@ -15,9 +15,9 @@ module wam_ifp_class
         real, allocatable, dimension(:) :: swang
         real, allocatable, dimension(:) :: swden
         real, allocatable, dimension(:) :: jhfac
-        real, allocatable, dimension(:) :: euvfac
+        real, allocatable, dimension(:) :: sheatfac
 
-        logical :: default_euvfac
+        logical :: default_sheatfac
         logical :: default_jhfac
       end type farr_t
 
@@ -36,7 +36,7 @@ module wam_ifp_class
         real :: swang
         real :: swden
         real :: jhfac
-        real :: euvfac
+        real :: sheatfac
       end type forcing_t
 
       type param_t

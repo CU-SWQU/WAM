@@ -670,10 +670,10 @@
         int_state % forcing % swvel = farr % swvel(kint) * wgt + farr % swvel(kint+1) * (1 - wgt)
         int_state % forcing % swbz  = farr % swbz (kint) * wgt + farr % swbz (kint+1) * (1 - wgt)
         int_state % forcing % swbt  = farr % swbt (kint) * wgt + farr % swbt (kint+1) * (1 - wgt)
-        if (farr % default_euvfac) then
-          int_state % forcing % euvfac = 1.0
+        if (farr % default_sheatfac) then
+          int_state % forcing % sheatfac = 1.0
         else
-          int_state % forcing % euvfac = farr % euvfac(kint)*wgt + farr % euvfac(kint+1)*(1 - wgt)
+          int_state % forcing % sheatfac = farr % sheatfac(kint)*wgt + farr % sheatfac(kint+1)*(1 - wgt)
         end if
         if (farr % default_jhfac) then
           int_state % forcing % jhfac = 1.0
@@ -696,10 +696,10 @@
         int_state % forcing % swvel = farr % swvel(kint)
         int_state % forcing % swbz  = farr % swbz (kint)
         int_state % forcing % swbt  = farr % swbt (kint)
-        if (farr % default_euvfac) then
-          int_state % forcing % euvfac = 1.0
+        if (farr % default_sheatfac) then
+          int_state % forcing % sheatfac = 1.0
         else
-          int_state % forcing % euvfac = farr % euvfac(kint)
+          int_state % forcing % sheatfac = farr % sheatfac(kint)
         end if
         if (farr % default_jhfac) then
           int_state % forcing % jhfac = 1.0

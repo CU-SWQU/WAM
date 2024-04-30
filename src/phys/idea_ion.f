@@ -135,7 +135,7 @@
      &  adu,adv,adt,dudt,dvdt,dtdt,rho,rlat,rlon,ix,im,levs,              
      &  dayno,utsec,sda,maglon,maglat,btot,dipang,essa,
      &  f107, f107d, kp, nhp, nhpi, shp, shpi, SPW_DRIVERS,
-     &  swbt, swang, swvel, swbz, swden)
+     &  swbt, swang, swvel, swbz, swden, da_jh_fac)
 !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ! driver      dtdt(i,k)=jh(i,k)/cp(i,k), dudt dvdt
 !              ion darge and Joule heating
@@ -189,6 +189,7 @@
       REAL, INTENT(in) :: essa(im)    !magnetic local time
       REAL, INTENT(in) :: sda         ! solar declination angle (rad)
       REAL, INTENT(in) :: utsec       !universal time
+      REAL, INTENT(in) :: da_jh_fac !IDEA DA Joule heating scaling factor
 ! output
       REAL, INTENT(out)     :: dtdt(ix,levs)  ! temperature change (k/s)
       REAL, INTENT(out)     :: dudt(ix,levs)  ! zonal wind change (m/s2)
@@ -252,8 +253,7 @@
           endif
 
       do k=1,levs
-!           dtdt(i,k)=jh(i,k)*jh_fac/cp(i,k)
-           dtdt(i,k)=jh(i,k)*jh_fac*st_fac/cp(i,k)
+           dtdt(i,k)=jh(i,k)*jh_fac*st_fac*da_jh_fac/cp(i,k)
       enddo
       enddo
       return
