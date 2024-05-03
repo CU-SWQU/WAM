@@ -863,7 +863,7 @@
      &                     forcing % swbt,   forcing % swang,
      &                     forcing % swvel,  forcing % swbz,
      &                     forcing % swden,  forcing % jhfac,
-     &                     forcing % euvfac)
+     &                     forcing % sheatfac)
 !
 !
 !
